@@ -22,19 +22,23 @@ ui_shop := class:
 
     var BackgroundWidget : WBP_Background = WBP_Background {}
 
-    var DetailWidget : WBP_ShopItemDetail = WBP_ShopItemDetail {}
+    var DetailWidget : WBP_ShopItemDetail = WBP_ShopItemDetail {}            
 
     var ShopFilters: ui_shopping_filters = ui_shopping_filters {}
 
     var ShopOffers: shop_offers_data = shop_offers_data {}
 
-    var PagedShopOffers: paginator(shop_offers) = paginator(shop_offers) {}
+    var PagedShopOffers: paginator(shop_offers) = paginator(shop_offers) {ItemsPerPage := 6}
 
     var ShopItems: []ui_shop_item = array{}
 
+    var ShopCardItems: []ui_shop_card = array{}
+
     var CurrentFilter: shop_item_type = shop_item_type.All
 
-    UIShopContainer : ui_shop_container = ui_shop_container {}
+    #UIShopContainer : ui_shop_container = ui_shop_container {}
+
+    UIShopCardContainer : ui_shop_card_container = ui_shop_card_container {}
     
     var BackButton : button_quiet = button_quiet {}
 
@@ -51,18 +55,34 @@ ui_shop := class:
             shop_item_type.All =>
                 AllOffers
             shop_item_type.Weapons => 
-                WeaponsOffers := for (Offer : AllOffers, Offer.Type = shop_item_type.Weapons):
+                WeaponsOffers := for (Offer : AllOffers, Offer.Labels = shop_item_type.Weapons):
                     Offer
             shop_item_type.Consumables => 
-                ConsumablesOffers := for (Offer : AllOffers, Offer.Type = shop_item_type.Consumables):
+                ConsumablesOffers := for (Offer : AllOffers, Offer.Labels = shop_item_type.Consumables):
+                    Offer
+            shop_item_type.New => 
+                NewOffers := for (Offer : AllOffers, Offer.Labels = shop_item_type.Consumables):
+                    Offer
+            shop_item_type.Sale => 
+                SaleOffers := for (Offer : AllOffers, Offer.Labels = shop_item_type.Consumables):
+                    Offer
+            shop_item_type.Limited => 
+                LimitedOffers := for (Offer : AllOffers, Offer.Labels = shop_item_type.Consumables):
                     Offer
 
-    SetShopItems(InShopOffers : []shop_offers) : void =
-        set ShopItems = array {}
+    # SetShopItems(InShopOffers : []shop_offers) : void =
+    #     set ShopItems = array {}
+    #     for(Offer : InShopOffers):
+    #         UIShopItem : ui_shop_item = ui_shop_item {}
+    #         UIShopItem.SetData(Offer)
+    #         set ShopItems += array {UIShopItem}
+
+    SetShopCardItems(InShopOffers : []shop_offers) : void =
+        set ShopCardItems = array {}
         for(Offer : InShopOffers):
-            UIShopItem : ui_shop_item = ui_shop_item {}
+            UIShopItem : ui_shop_card = ui_shop_card {}
             UIShopItem.SetData(Offer)
-            set ShopItems += array {UIShopItem}
+            set ShopCardItems += array {UIShopItem}
         
 
     ShowUI() : void =
@@ -77,11 +97,15 @@ ui_shop := class:
         NextPageButton.SetText(NextPageButtonText)
         PreviousPageButton.SetText(PreviousPageButtonText)
 
+        set BackgroundWidget.PlayerCoins = 5500.0
+        set BackgroundWidget.PlayerGems = 300.0
+
         FiltersUI : overlay = ShopFilters.Build()
 
         AllOffers : []shop_offers = GetShopOffersByType()
         PagedShopOffers.SetItems(AllOffers)
-        SetShopItems(PagedShopOffers.CurrentPageItems())
+        #SetShopItems(PagedShopOffers.CurrentPageItems())
+        SetShopCardItems(PagedShopOffers.CurrentPageItems())
         spawn { HandleFilterChanged() }
         if(FirstOffer := AllOffers[0]):
             SetDataToDetailWidget(FirstOffer)
@@ -93,7 +117,7 @@ ui_shop := class:
 
         PreviousPageButton.SetEnabled(false)        
 
-        set ShopItemsContainer = UIShopContainer.Build(ShopItems)
+        set ShopItemsContainer = UIShopCardContainer.Build(ShopCardItems)        
         set ShopItemsWidget = stack_box:
             Orientation := orientation.Vertical
             Slots := array:
@@ -120,7 +144,7 @@ ui_shop := class:
                     Widget := ShopItemsContainer
                     HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Fill
-                    Padding := margin {Left := 150.0, Right:= 150.0, Top:= 30.0 }                
+                    Padding := margin {Right:= 450.0}                            
 
         set OverlayRoot = overlay:
             Slots := array:
@@ -135,8 +159,8 @@ ui_shop := class:
                     Padding := margin {Top := 30.0, Right := 50.0}
                 overlay_slot:
                     Widget := ShopItemsWidget
-                    VerticalAlignment := vertical_alignment.Top
-                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Fill
+                    HorizontalAlignment := horizontal_alignment.Center
                 overlay_slot:
                     Widget := DetailWidget
                     VerticalAlignment := vertical_alignment.Center
@@ -149,23 +173,23 @@ ui_shop := class:
             set CurrentFilter = FilterMessage.FilterType
             FilteredOffers : []shop_offers = GetShopOffersByType(?ItemType := FilterMessage.FilterType)
             PagedShopOffers.SetItems(FilteredOffers)
-            SetShopItems(PagedShopOffers.CurrentPageItems())
+            SetShopCardItems(PagedShopOffers.CurrentPageItems())
             ShopItemsWidget.RemoveWidget(ShopItemsContainer)
-            set ShopItemsContainer = UIShopContainer.Build(ShopItems)
+            set ShopItemsContainer = UIShopCardContainer.Build(ShopCardItems)
             PreviousPageButton.SetEnabled(false)
             NextPageButton.SetEnabled(true)
             ShopItemsWidget.AddWidget(stack_box_slot{
                 Widget := ShopItemsContainer
                 HorizontalAlignment := horizontal_alignment.Fill
                 VerticalAlignment := vertical_alignment.Fill
-                Padding := margin {Left := 150.0, Right:= 150.0 }
+                Padding := margin {Right:= 450.0}
             })
     
     OnNextPageClicked(_m:widget_message): void =
         PagedShopOffers.NextPage()
-        SetShopItems(PagedShopOffers.CurrentPageItems())
+        SetShopCardItems(PagedShopOffers.CurrentPageItems())
         ShopItemsWidget.RemoveWidget(ShopItemsContainer)
-        set ShopItemsContainer = UIShopContainer.Build(ShopItems)
+        set ShopItemsContainer = UIShopCardContainer.Build(ShopCardItems)
         PreviousPageButton.SetEnabled(true)
         PageCount : int = PagedShopOffers.TotalPages()
         if(PagedShopOffers.CurrentPage + 1 >= PageCount):
@@ -176,14 +200,14 @@ ui_shop := class:
             Widget := ShopItemsContainer
             HorizontalAlignment := horizontal_alignment.Fill
             VerticalAlignment := vertical_alignment.Fill
-            Padding := margin {Left := 150.0, Right:= 150.0 }
+            Padding := margin {Right:= 450.0}
         })
 
     OnPreviousPageClicked(_m:widget_message): void =
         PagedShopOffers.PreviousPage()
-        SetShopItems(PagedShopOffers.CurrentPageItems())
+        SetShopCardItems(PagedShopOffers.CurrentPageItems())
         ShopItemsWidget.RemoveWidget(ShopItemsContainer)
-        set ShopItemsContainer = UIShopContainer.Build(ShopItems)
+        set ShopItemsContainer = UIShopCardContainer.Build(ShopCardItems)
         NextPageButton.SetEnabled(true)
         if(PagedShopOffers.CurrentPage <= 0):
             PreviousPageButton.SetEnabled(false)
@@ -193,7 +217,7 @@ ui_shop := class:
             Widget := ShopItemsContainer
             HorizontalAlignment := horizontal_alignment.Fill
             VerticalAlignment := vertical_alignment.Fill
-            Padding := margin {Left := 150.0, Right:= 150.0 }
+            Padding := margin {Right:= 450.0}
         })
 
     OnBackButtonClicked(_m:widget_message): void =
@@ -202,7 +226,7 @@ ui_shop := class:
     
     HandleItemChanged(Item : shop_offers)<suspends>: void =
         loop:
-            ItemClicked := UIShopContainer.OnItemClicked.Await()
+            ItemClicked := UIShopCardContainer.OnItemClicked.Await()
             Print("Item Clicked: {Localize(ItemClicked.Name)}", ?Duration := 6.0)            
             SetDataToDetailWidget(ItemClicked)
 

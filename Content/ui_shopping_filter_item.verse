@@ -40,8 +40,7 @@ ui_shopping_filter_item:= class:
 
     SetData(InShopFilter : shop_filters) : void =
         set ShopFilter = InShopFilter
-        set FilterItemWidget.FilterName = InShopFilter.Name
-        set FilterItemWidget.FilterDescription = InShopFilter.Description
+        set FilterItemWidget.FilterName = InShopFilter.Name        
         set FilterItemWidget.FilterIcon = InShopFilter.Icon
         FilterItemWidget.FilterIcon
 

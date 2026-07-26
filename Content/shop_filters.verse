@@ -4,12 +4,11 @@ using { ShoppingUI.Textures }
 using { /Verse.org/Assets }
 
 shop_filters<public> := class:
-    Name<public><localizes>: message = "Name"
-    Description<public><localizes>: message = "Description"
+    Name<public><localizes>: message = "Name"    
     FilterType<public>: shop_item_type = shop_item_type.All
     Icon<public>: texture = T_Blank
 
-shop_item_type<public> := enum{All, Weapons, Consumables}
+shop_item_type<public> := enum{All, Sale, New, Limited, Weapons, Consumables}
 
 shop_filters_data<public> := class:
     AllFilter<localizes> : message = "All"
@@ -21,11 +20,19 @@ shop_filters_data<public> := class:
     ConsumiblesFilter<localizes> : message = "Consumables"
     ConsumiblesFilterDescription<localizes> : message = "Consumables items"
 
+    SaleFilter<localizes> : message = "Sale"
+    NewFilter<localizes> : message = "New"
+    LimitedFilter<localizes> : message = "Limited"
+
+
     GetFilters() : []shop_filters =        
         array{
-            shop_filters{Name := AllFilter, Description := AllFilterDescription, FilterType := shop_item_type.All, Icon := T_All_Filter }
-            shop_filters{Name := WeaponsFilter, Description := WeaponsFilterDescription, FilterType := shop_item_type.Weapons, Icon := T_Weapon_Filter }
-            shop_filters{Name := ConsumiblesFilter, Description := ConsumiblesFilterDescription, FilterType := shop_item_type.Consumables, Icon := T_Consumibles_Filter }
+            shop_filters{Name := AllFilter, FilterType := shop_item_type.All, Icon := T_All_Filter }
+            shop_filters{Name := WeaponsFilter, FilterType := shop_item_type.Weapons, Icon := T_Weapon_Filter }
+            shop_filters{Name := ConsumiblesFilter, FilterType := shop_item_type.Consumables, Icon := T_Consumibles_Filter }
+            shop_filters{Name := SaleFilter, FilterType := shop_item_type.Sale, Icon := T_Consumibles_Filter }
+            shop_filters{Name := ConsumiblesFilter, FilterType := shop_item_type.New, Icon := T_Consumibles_Filter }
+            shop_filters{Name := ConsumiblesFilter, FilterType := shop_item_type.Limited, Icon := T_Consumibles_Filter }
         }
         
         

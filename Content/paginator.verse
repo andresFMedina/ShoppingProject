@@ -1,7 +1,7 @@
 paginator(t:type) := class:
 
     var Items : []t = array{}
-    var ItemsPerPage : int = 3
+    ItemsPerPage<public> : int = 3
     var CurrentPage : int = 0
 
     SetItems(NewItems : []t) : void =
